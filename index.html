@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/css/bootstrap.min.css"
+        integrity="sha384-zCbKRCUGaJDkqS1kPbPd7TveP5iyJE0EjAuZQTgFLD2ylzuqKfdKlfG/eSrtxUkn" crossorigin="anonymous">
+
+    <title>CRUD Agenda</title>
+</head>
+
+<body>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <a class="navbar-brand" href="#">CRUD Agenda</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav mr-auto">
+                <li class="nav-item active">
+                    <a class="nav-link" href="/">Home <span class="sr-only">(current)</span></a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="./backoffice.html">Backoffice</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <h2 class="mt-5 mb-3">Current Appointments</h2>
+                <ul id="currentEvents" class="list-group">
+                    <div class="spinner-grow text-primary" style="width: 3rem; height: 3rem;" role="status">
+                        <span class="sr-only">Loading...</span>
+                    </div>
+                    <!-- <li class="list-group-item">An item</li>
+                    <li class="list-group-item">A second item</li>
+                    <li class="list-group-item">A third item</li>
+                    <li class="list-group-item">A fourth item</li>
+                    <li class="list-group-item">And a fifth one</li> -->
+                </ul>
+            </div>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js"
+        integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj"
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-fQybjgWLrvvRgtW6bFlB7jaZrFsaBXjsOMm/tB9LTS58ONXgqbR9W8oWht/amnpF"
+        crossorigin="anonymous"></script>
+
+    <script>
+
+        // <li class="list-group-item">A second item</li>
+
+
+
+        const getData = async (url) => {
+            const resp = await fetch(url)
+
+            if (resp.status === 404) throw new Error("resource not found")
+            if (!resp.ok) throw new Error("generic error, something wrong with the fetch")
+
+            const events = await resp.json()
+
+            return events
+        }
+
+        const displayEvents = (events) => {
+            const eventsList = document.getElementById("currentEvents")
+
+            if (!Array.isArray(events)) throw new Error("You need to pass an array into the function")
+
+
+            events.forEach((event, idx) => {
+                const listItem = document.createElement("li")
+                listItem.className = "list-group-item d-flex justify-content-between align-items-center"
+
+                listItem.innerHTML = `<span class="mr-auto">${idx} — ${event.name}</span> <span class=flex-shrink-0><span class="badge badge-dark mr-2">${event.price}€</span> <a href="./details.html">VIEW DETAILS</a></span>`
+                eventsList.appendChild(listItem)
+            })
+
+        }
+
+
+        const getAndDisplay = async (url) => {
+            const events = await getData(url)
+            console.log(events)
+            displayEvents(events)
+        }
+
+        // window.onload = () => {
+        // const API_URL = "https://striveschool-api.herokuapp.com/api/agenda/"
+
+        // try {
+        //     // COMBINED APPROACH WITH OUTER SYNCHRONOUS CONTEXT
+        //     getAndDisplay(API_URL)
+        //     // getData(API_URL).then(events => { console.log(events); displayEvents(events) })
+
+
+        // } catch (err) {
+        //     console.log("ERROR HAPPENED", err)
+        //     const h2 = document.querySelector("h2")
+        //     h2.classList.add("text-danger")
+        //     h2.innerText = err.message + ", try to refresh the page"
+        // }
+        // console.log("LAST LOG")
+        // }
+
+        window.onload = async () => {
+            const API_URL = "https://striveschool-api.herokuapp.com/api/agenda/"
+            // ASYNC AWAIT APPROACH
+            try {
+                const resp = await fetch(API_URL)
+
+                // EXITS THE EXECUTION IN ONE OF THESE TWO THROWINGS
+                if (resp.status === 404) throw new Error("resource not found")
+                if (!resp.ok) throw new Error("generic error, something wrong with the fetch")
+
+                // IF ERROR IS THROWN NOTHING HERE WILL BE RUNNING 
+                const events = await resp.json()
+
+                const eventsList = document.getElementById("currentEvents")
+
+                eventsList.innerHTML = ""
+
+                if (!Array.isArray(events)) throw new Error("You need to pass an array into the function")
+                events.forEach((event, idx) => {
+                    const listItem = document.createElement("li")
+                    listItem.className = "list-group-item d-flex justify-content-between align-items-center"
+
+                    listItem.innerHTML = `<span class="mr-auto">${idx} — ${event.name}</span> <span class=flex-shrink-0><span class="badge badge-dark mr-2">${event.price}€</span> <a href="./details.html?eventId=${event._id}">VIEW DETAILS</a></span>`
+                    eventsList.appendChild(listItem)
+                })
+
+            } catch (err) {
+                console.log("ERROR HAPPENED", err)
+                const h2 = document.querySelector("h2")
+                h2.classList.add("text-danger")
+                h2.innerText = err.message + ", try to refresh the page"
+            }
+
+            // ALTERNATIVE Promise.then()
+            // fetch(API_URL)
+            //     .then(resp => resp.json())
+            //     .then(events => {
+            //         //DOM MANIPULATION
+
+            //         console.log(events)
+            //         const eventsList = document.getElementById("currentEvents")
+
+            //         events.forEach((event, idx) => {
+            //             const listItem = document.createElement("li")
+            //             listItem.className = "list-group-item d-flex justify-content-between align-items-center"
+
+            //             listItem.innerHTML = `<span class="mr-auto">${idx} — ${event.name}</span> <span class=flex-shrink-0><span class="badge badge-dark mr-2">${event.price}€</span> <a href="#">VIEW DETAILS</a></span>`
+            //             eventsList.appendChild(listItem)
+            //         })
+            //     })
+
+            console.log("LAST LOG")
+        }
+
+    </script>
+</body>
+
+</html>
